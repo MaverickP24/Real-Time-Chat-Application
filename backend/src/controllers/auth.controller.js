@@ -4,8 +4,14 @@ import bcrypt from "bcryptjs"
 
 
 export const signup = async (req,res)=>{
-    const {fullname,email,password} = req.body
+    const {fullName,email,password} = req.body
     try {
+
+
+        if (!fullName || !email || !password) {
+            return res.status(400).json({message:"All fields required."})
+        }
+
         if (password < 6){
             return res.status(400).json({message:"Password must be at least of 6 characters"})
         }
@@ -47,10 +53,44 @@ export const signup = async (req,res)=>{
     }
 }
 
-export const login = (req,res)=>{
-    res.send("login route")
+export const login = async (req,res)=>{
+    try {
+        const {fullName,email,password} = req.body
+
+        const user = await User.findOne({email});
+
+        if (!user) return (res.status(400).json({message:"Invalid Creddentials"}))
+
+        const isPwdCorrect = await bcrypt.compare(password,user.password);
+
+        if (!isPwdCorrect) return (res.status(400).json({message:"Invalid Creddentials"}));
+
+        generatetoken(user._id,res);
+
+        res.status(200).json({
+            _id:user._id,
+            fullName:user.fullName,
+            email:user.email,
+            profilePic:user.profilePic,
+        })
+
+        
+    } catch (error) {
+        console.log("login controller error, " + error.message)
+        res.status(500).json({message:"Internal server error"})
+    }
 }
 
-export const logout  =(req,res)=>{
-    res.send("logout route")
+export const logout  = (req,res)=>{
+    try {
+        res.cookie("jwt","",{maxAge:0})
+        res.status(200).json({message:"Logged out Successfully"})
+        
+    } catch (error) {
+        console.log("logout controller error, " + error.message)
+        res.status(500).json({message:"Internal server error"})
+    }
 }
+
+// export const updateProfile = async(req,res)=>{
+// }
