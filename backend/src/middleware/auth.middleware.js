@@ -4,7 +4,7 @@ import User from "../models/user.model.js"
 export const protectRoute = async (req,res,next)=>{
     try {
 
-    const token  = req.cookie.jwt;
+    const token  = req.cookies.jwt;
 
     if(!token) return res.status(401).json({message:"Unauthorized - NO token Provided"})
         
@@ -12,7 +12,7 @@ export const protectRoute = async (req,res,next)=>{
 
     if(!decoded) return res.status(401).json({message:"Unauthorized - Invalid token Provided"})
         
-    const user = User.findById(decoded.userId).select("-password")
+    const user = await User.findById(decoded.userId).select("-password")
         
     if(!user) return res.status(404).json({message:"User Not Found"})
 
@@ -21,8 +21,8 @@ export const protectRoute = async (req,res,next)=>{
     next()
         
     } catch (error) {
-        console.log("Error in ProtectRoute middleware", error.message)
-        req.status(500).json({message:"Internal Server Error"})
+        console.log("Error in ProtectRoute middleware :", error.message)
+        res.status(500).json({message:"Internal Server Error"})
         
     }
         
