@@ -2,6 +2,7 @@ import cloudinary from "../lib/cloudinary.js"
 import { generateToken } from "../lib/utils.js"
 import User from "../models/user.model.js"
 import bcrypt from "bcryptjs"
+import cookieParser from "cookie-parser"
 
 
 export const signup = async (req,res)=>{
@@ -33,22 +34,37 @@ export const signup = async (req,res)=>{
 
         if(newUser){
             // web token generates here
-            generatetoken(newUser._id,res)
+            // generatetoken(newUser._id,res)
+            // await newUser.save()
+
+            // res.status(201).json({
+            //     _id: newUser._id,
+            //     fullName : newUser.fullName,
+            //     email: newUser.email,
+            //     profilePic : newUser.profilePic,
+            // }); 
+
+
+            generateToken(newUser._id,res);
+
             await newUser.save()
 
+  
+
             res.status(201).json({
-                _id: newUser._id,
-                fullName : newUser.fullName,
-                email: newUser.email,
-                profilePic : newUser.profilePic,
-            }); 
+              _id: newUser._id,
+              fullName: newUser.fullName,
+              email: newUser.email,
+              profilePic: newUser.profilePic,
+            
+            });
         }
         else{
             res.status(400).json({message:"Invalid User Data"})
         }
 
     } catch (error) {
-        console.log("error in signin controller",error.message)
+        console.log("error in signup controller",error.message)
         res.status(500).json({message:"Internal server error"})
         
     }
